@@ -57,7 +57,7 @@ def send_tag(context: CallbackContext) -> None:
 
 def mention_list(chat_id: int):
     r = requests.get(f"{API_URL}/get/{chat_id}")
-    users = r.json() if r.status_code == 200 else []
+    users = r.json() if r.status_code == 200 else {}
     return [
         mention_markdown(user_id, user_name)
         for user_id, user_name in users.items()
@@ -103,7 +103,7 @@ def tag_all(update: Update, context: CallbackContext) -> None:
             )
         message_id = update.effective_message.reply_to_message.message_id
         tags = mention_list(update.effective_chat.id)
-        for tag in split_list(list(tags), 3):
+        for tag in split_list(list(tags), 5):
             schedule_job(context, update.effective_chat.id, message_id, tag)
 
 
