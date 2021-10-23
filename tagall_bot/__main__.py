@@ -351,3 +351,4 @@ if __name__ == "__main__":
     else:
         LOGGER.info("Using Long Polling...")
         UPDATER.start_polling()
+    UPDATER.idle()
