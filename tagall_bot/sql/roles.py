@@ -30,6 +30,8 @@ class tag_users(BASE):
         return f"<Tag user {self.user_id} of {self.chat_id}>"
 
 
+sudo_users.__table__.create(checkfirst=True)
+tag_users.__table__.create(checkfirst=True)
 INSERTION_LOCK = threading.RLock()
 
 
