@@ -1,7 +1,10 @@
+from os import environ
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
-from tagall_bot import DB_URI
+
+DB_URI = environ.get("DATABASE_URL")
 
 
 def start() -> scoped_session:

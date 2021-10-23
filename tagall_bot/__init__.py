@@ -45,8 +45,6 @@ API_HASH = environ.get("API_HASH", "")
 WEBHOOK = bool(environ.get("WEBHOOK", False))
 URL = environ.get("URL", "")  # Does not contain token
 PORT = int(environ.get("PORT", 5000))
-
-DB_URI = environ.get("DATABASE_URL")
 SUDO_USERS.add(OWNER_ID)
 SUDO_USERS.update(get_users(sudo_users), SUDO_GROUPS)
 TAG_USERS = get_users(tag_users)
