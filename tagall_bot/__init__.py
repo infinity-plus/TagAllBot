@@ -1,6 +1,7 @@
 import logging
 from os import environ
 
+from ptbcontrib.roles import Roles, setup_roles
 from telegram.ext import Dispatcher, Updater
 
 from tagall_bot.sql.roles import get_users, sudo_users, tag_users
@@ -46,3 +47,22 @@ TAG_USERS = get_users(tag_users)
 
 UPDATER: Updater = Updater(token=TOKEN)
 DISPATCHER: Dispatcher = UPDATER.dispatcher
+roles: Roles = setup_roles(DISPATCHER)
+roles.add_admin(OWNER_ID)
+
+if "TAG_USERS" not in roles:
+    roles.add_role("TAG_USERS")
+
+if "SUDO_USERS" not in roles:
+    roles.add_role("SUDO_USERS")
+
+SUDO_USERS = roles["SUDO_USERS"]
+TAG_USERS = roles["TAG_USERS"]
+SUDO_USERS.add_child_role(TAG_USERS)
+ADMINS = roles.admins
+
+for sudo in get_users(sudo_users):
+    SUDO_USERS.add_member(sudo)
+
+for tag in get_users(tag_users):
+    TAG_USERS.add_member(tag)

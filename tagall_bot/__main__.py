@@ -7,26 +7,27 @@ from telegram.ext import CallbackContext, Filters, Job, JobQueue, PrefixHandler
 from telegram.utils.helpers import mention_markdown
 
 from tagall_bot import (
+    ADMINS,
+    API_URL,
     DISPATCHER,
     DND_USERS,
     LOGGER,
     PORT,
+    SUDO_USERS,
+    TAG_USERS,
+    TOKEN,
     UPDATER,
     URL,
     WEBHOOK,
-    TOKEN,
-    API_URL,
 )
-from tagall_bot.roles import (
-    ADMIN,
-    SUDO_USERS,
-    TAG_USERS,
-    USERS,
-    add_user_to_role,
-    remove_user_from_role,
+from tagall_bot.sql.roles import (
+    add_sudo,
+    add_tag,
+    is_tag_user,
+    remove_sudo,
+    remove_tag,
 )
-from tagall_bot.sql.roles import is_tag_user
-from tagall_bot.texts import HELP_TEXT, START_TEXT, BAD_TEXT
+from tagall_bot.texts import BAD_TEXT, HELP_TEXT, START_TEXT
 
 
 def start(update: Update, _: CallbackContext) -> None:
@@ -84,7 +85,7 @@ def schedule_job(
     if isinstance(context.job_queue, JobQueue):
         context.job_queue.run_once(
             callback=send_tag,
-            when=3*delay,
+            when=3 * delay,
             context=(chat_id, message_id, tag),
         )
 
@@ -117,31 +118,28 @@ def bad_tag(update: Update, _: CallbackContext) -> None:
                 text=BAD_TEXT[0],
                 parse_mode=PARSEMODE_MARKDOWN,
             )
-        elif update.effective_message.from_user.id not in set(
-            (
-                *SUDO_USERS.chat_ids,
-                *TAG_USERS.chat_ids,
-            )
-        ):
-            update.effective_message.reply_text(
-                text=BAD_TEXT[1],
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
         elif update.effective_message.reply_to_message is None:
             update.effective_message.reply_text(
                 text="Please reply to a message to tag all users of the chat.",
                 parse_mode=PARSEMODE_MARKDOWN,
             )
+        else:
+            update.effective_message.reply_text(
+                text=BAD_TEXT[1],
+                parse_mode=PARSEMODE_MARKDOWN,
+            )
 
 
 def add_tag_user(update: Update, _: CallbackContext):
-    if isinstance(update.effective_message, Message):
+    if isinstance(update.effective_message, Message) and isinstance(
+        update.effective_chat, Chat
+    ):
         user: User = update.effective_message.reply_to_message.from_user
-        if add_user_to_role(
+        if add_tag(
             user.id,
-            USERS.TAG_USERS,
-            update.effective_message.chat.id,
+            update.effective_chat.id,
         ):
+            TAG_USERS.add_member(user.id)
             update.effective_message.reply_text(
                 text=f"Granted *tag* power to *{user.full_name}*",
                 parse_mode=PARSEMODE_MARKDOWN,
@@ -156,7 +154,8 @@ def add_tag_user(update: Update, _: CallbackContext):
 def add_sudo_user(update: Update, _: CallbackContext):
     if isinstance(update.effective_message, Message):
         user: User = update.effective_message.reply_to_message.from_user
-        if add_user_to_role(user.id, USERS.SUDO_USERS, None):
+        if add_sudo(user.id):
+            SUDO_USERS.add_member(user.id)
             update.effective_message.reply_text(
                 text=f"Granted *superuser* power to *{user.full_name}*",
                 parse_mode=PARSEMODE_MARKDOWN,
@@ -191,11 +190,11 @@ def bad_add(update: Update, _: CallbackContext) -> None:
 def remove_tag_user(update: Update, _: CallbackContext):
     if isinstance(update.effective_message, Message):
         user: User = update.effective_message.reply_to_message.from_user
-        if remove_user_from_role(
+        if remove_tag(
             user.id,
-            USERS.TAG_USERS,
             update.effective_message.chat.id,
         ):
+            TAG_USERS.kick_member(user.id)
             update.effective_message.reply_text(
                 text=f"Revoked *tag* power from *{user.full_name}*",
                 parse_mode=PARSEMODE_MARKDOWN,
@@ -210,7 +209,8 @@ def remove_tag_user(update: Update, _: CallbackContext):
 def remove_sudo_user(update: Update, _: CallbackContext):
     if isinstance(update.effective_message, Message):
         user: User = update.effective_message.reply_to_message.from_user
-        if remove_user_from_role(user.id, USERS.SUDO_USERS):
+        if remove_sudo(user.id):
+            SUDO_USERS.kick_member(user.id)
             update.effective_message.reply_text(
                 text=f"Revoked *superuser* power from *{user.full_name}*",
                 parse_mode=PARSEMODE_MARKDOWN,
@@ -300,7 +300,7 @@ if __name__ == "__main__":
                 filters=Filters.chat_type.groups,
                 run_async=True,
             ),
-            roles=ADMIN,
+            roles=ADMINS,
         )
     )
     DISPATCHER.add_handler(
@@ -331,7 +331,7 @@ if __name__ == "__main__":
                 filters=Filters.chat_type.groups,
                 run_async=True,
             ),
-            roles=ADMIN,
+            roles=ADMINS,
         )
     )
     DISPATCHER.add_handler(

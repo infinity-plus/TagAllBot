@@ -37,10 +37,10 @@ INSERTION_LOCK = threading.RLock()
 
 def get_users(table: sudo_users | tag_users) -> set[int]:
     try:
-        all_users = SESSION.query(table).all()
+        all_users = SESSION.query(table.user_id)
     finally:
         SESSION.close()
-    return {user.user_id for user in all_users}
+    return {int(user.user_id[0]) for user in all_users}
 
 
 def is_tag_user(user_id: int, chat_id: int) -> bool:
@@ -51,17 +51,17 @@ def is_tag_user(user_id: int, chat_id: int) -> bool:
     return bool(user)
 
 
-def add_sudo_user(user_id: int):
+def add_sudo(user_id: int):
     with INSERTION_LOCK:
         user = SESSION.query(sudo_users).get(user_id)
-        if not user:
+        if user is None:
             SESSION.add(sudo_users(user_id))
             SESSION.commit()
             return True
         return False
 
 
-def add_tag_user(user_id: int, chat_id: int):
+def add_tag(user_id: int, chat_id: int):
     with INSERTION_LOCK:
         user = SESSION.query(tag_users).get((user_id, chat_id))
         if not user:
@@ -71,7 +71,7 @@ def add_tag_user(user_id: int, chat_id: int):
         return False
 
 
-def remove_sudo_user(user_id: int):
+def remove_sudo(user_id: int):
     with INSERTION_LOCK:
         user = SESSION.query(sudo_users).get(user_id)
         if user:
@@ -81,7 +81,7 @@ def remove_sudo_user(user_id: int):
         return False
 
 
-def remove_tag_user(user_id: int, chat_id: int):
+def remove_tag(user_id: int, chat_id: int):
     with INSERTION_LOCK:
         user = SESSION.query(tag_users).get((user_id, chat_id))
         if user:
