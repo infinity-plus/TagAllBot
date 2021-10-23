@@ -2,7 +2,6 @@ import logging
 from os import environ
 
 from telegram.ext import Dispatcher, Updater
-from telethon.sync import TelegramClient
 
 from tagall_bot.sql.roles import get_users, sudo_users, tag_users
 
@@ -37,11 +36,6 @@ try:
 except ValueError:
     raise ValueError("Your DND users list does not contain valid integers.")
 
-try:
-    API_ID = int(environ.get("API_ID", ""))
-except ValueError:
-    raise ValueError("Your API_ID is not a valid integer.")
-API_HASH = environ.get("API_HASH", "")
 WEBHOOK = bool(environ.get("WEBHOOK", False))
 URL = environ.get("URL", "")  # Does not contain token
 API_URL = environ.get("API_URL", "")  # No trailing slash
@@ -52,5 +46,3 @@ TAG_USERS = get_users(tag_users)
 
 UPDATER: Updater = Updater(token=TOKEN)
 DISPATCHER: Dispatcher = UPDATER.dispatcher
-TELETHON_CLIENT = TelegramClient("tagall_bot", API_ID, API_HASH)
-iter_participants = TELETHON_CLIENT.iter_participants

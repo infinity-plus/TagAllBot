@@ -30,11 +30,9 @@ Aditionally, **Bot owner** can use following commands:
 #### Required
 
  - `TOKEN` : Bot token from [BotFather](https://t.me/Botfather).
- - `API_ID` : Your API_ID from [Telegram](https://my.telegram.org).
- - `API_HASH` : Your API_HASH from [Telegram](https://my.telegram.org).
  - `OWNER_ID` : Telegram user_id of owner. Get it via [@userinfobot](https://t.me/userinfobot).
  - `DATABASE_URL` : URL of your Postgres database. (Automatic if on Heroku).
- - `API_URL`: URL of the deployed chatidToMembersAPI. Deploy from here: [infinity-plus/chatToMembersAPI](https://github.com/infinity-plus/chatidToMembersAPI)
+ - `API_URL` : URL of the deployed chatidToMembersAPI. Deploy from here: [infinity-plus/chatToMembersAPI](https://github.com/infinity-plus/chatidToMembersAPI)
 
 #### Optional
 

@@ -15,6 +15,7 @@ from tagall_bot import (
     URL,
     WEBHOOK,
     TOKEN,
+    API_URL,
 )
 from tagall_bot.roles import (
     ADMIN,
@@ -58,7 +59,9 @@ def mention_list(chat_id: int):
     r = requests.get(f"{API_URL}/{chat_id}")
     users = r.json() if r.status_code == 200 else []
     return [
-        mention_markdown(user_id, user_name) for user_id, user_name in users.items()
+        mention_markdown(user_id, user_name)
+        for user_id, user_name in users.items()
+        if user_id not in DND_USERS
     ]
 
 

@@ -24,14 +24,6 @@
             "description": "Bot API Key from BotFather https://t.me/BotFather",
             "required": true
         },
-        "API_ID": {
-            "description": "API ID from https://my.telegram.org",
-            "required": true
-        },
-        "API_HASH": {
-            "description": "API Hash from https://my.telegram.org",
-            "required": true
-        },
         "OWNER_ID": {
             "description": "Telegram ID of the bot owner.",
             "required": true
