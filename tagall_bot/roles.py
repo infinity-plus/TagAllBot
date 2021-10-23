@@ -8,8 +8,6 @@ from tagall_bot.sql.roles import (
     add_tag_user,
     remove_sudo_user,
     remove_tag_user,
-    sudo_users,
-    tag_users,
 )
 
 roles: Roles = setup_roles(DISPATCHER)
@@ -58,7 +56,7 @@ def remove_user_from_role(
         if role == USERS.SUDO_USERS:
             result = remove_sudo_user(user_id)
         elif role == USERS.TAG_USERS and chat_id is not None:
-            result = remove_tag_user(tag_users, user_id)
+            result = remove_tag_user(user_id, chat_id)
         else:
             result = False
         if result:
@@ -67,6 +65,8 @@ def remove_user_from_role(
     return False
 
 
+for SUDO in SUDO_USERS:
+    add_user_to_role(SUDO, USERS.SUDO_USERS)
 SUDO_USERS: Role = roles["SUDO_USERS"]
 TAG_USERS: Role = roles["TAG_USERS"]
 ADMIN: Role = roles.admins

@@ -44,6 +44,7 @@ except ValueError:
 API_HASH = environ.get("API_HASH", "")
 WEBHOOK = bool(environ.get("WEBHOOK", False))
 URL = environ.get("URL", "")  # Does not contain token
+API_URL = environ.get("API_URL", "")  # No trailing slash
 PORT = int(environ.get("PORT", 5000))
 SUDO_USERS.add(OWNER_ID)
 SUDO_USERS.update(get_users(sudo_users), SUDO_GROUPS)

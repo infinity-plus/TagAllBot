@@ -1,3 +1,4 @@
+import requests
 from ptbcontrib.reply_to_message_filter import ReplyToMessageFilter
 from ptbcontrib.roles import RolesHandler
 from telegram import Chat, Message, Update, User
@@ -14,7 +15,6 @@ from tagall_bot import (
     URL,
     WEBHOOK,
     TOKEN,
-    iter_participants,
 )
 from tagall_bot.roles import (
     ADMIN,
@@ -55,11 +55,11 @@ def send_tag(context: CallbackContext) -> None:
 
 
 def mention_list(chat_id: int):
-    return (
-        mention_markdown(user.id, user.first_name)
-        for user in iter_participants(chat_id)
-        if user.id not in DND_USERS
-    )
+    r = requests.get(f"{API_URL}/{chat_id}")
+    users = r.json() if r.status_code == 200 else []
+    return [
+        mention_markdown(user_id, user_name) for user_id, user_name in users.items()
+    ]
 
 
 def split_list(array: list[str], chunk_size: int):
