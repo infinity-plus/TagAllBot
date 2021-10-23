@@ -56,7 +56,7 @@ def send_tag(context: CallbackContext) -> None:
 
 
 def mention_list(chat_id: int):
-    r = requests.get(f"{API_URL}/{chat_id}")
+    r = requests.get(f"{API_URL}/get/{chat_id}")
     users = r.json() if r.status_code == 200 else []
     return [
         mention_markdown(user_id, user_name)
