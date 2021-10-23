@@ -79,11 +79,12 @@ def schedule_job(
     chat_id: int,
     message_id: int,
     tag: list[str],
+    delay: int,
 ):
     if isinstance(context.job_queue, JobQueue):
         context.job_queue.run_once(
             callback=send_tag,
-            when=3,
+            when=3*delay,
             context=(chat_id, message_id, tag),
         )
 
@@ -103,8 +104,8 @@ def tag_all(update: Update, context: CallbackContext) -> None:
             )
         message_id = update.effective_message.reply_to_message.message_id
         tags = mention_list(update.effective_chat.id)
-        for tag in split_list(list(tags), 5):
-            schedule_job(context, update.effective_chat.id, message_id, tag)
+        for i, tag in enumerate(split_list(list(tags), 5)):
+            schedule_job(context, update.effective_chat.id, message_id, tag, i)
 
 
 def bad_tag(update: Update, _: CallbackContext) -> None:
