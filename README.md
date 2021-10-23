@@ -23,7 +23,9 @@ Aditionally, **Bot owner** can use following commands:
 * `!grant`: Grants the replied user with "tag" role, i.e, they can use the bot in that particular chat.
 * `!revoke`: Revokes the "tag" role of the replied person.
 
-## Environment Variables:
+## Deploying:
+
+### Environment Variables:
 
 #### Required
 
@@ -39,6 +41,31 @@ Aditionally, **Bot owner** can use following commands:
  - `URL` : URL of server for webhooks. (Use `https://<appname>.herokuapp.com/` if on Heroku)
  - `SUDO_USERS` : Space separated list of user_ids that can use the bot everywhere.
  - `DND_USERS` : Space separated list of user_ids that will not be tagged by the bot.
+
+### Deploying locally or on VPS:
+
+* Clone the repo:
+
+```
+git clone https://github.com/YAIFoundation/TagAllBot.git
+```
+
+* Install the requirements:
+
+```
+cd TagAllBot
+python3 -m pip install -r requirements.txt
+```
+
+* Start the Bot:
+
+```
+python3 -m tagall_bot
+```
+
+### Deploy on HEROKU
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ## Built with
 

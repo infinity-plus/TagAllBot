@@ -1,0 +1,60 @@
+{
+    "name": "Tag All Bot",
+    "description": "A telegram bot that tags all the users in a group.",
+    "repository": "https://github.com/YAIFoundation/TagAllBot",
+    "logo": "",
+    "keywords": [
+        "python",
+        "python-telegram-bot",
+        "Tag All",
+        "Ping All"
+    ],
+    "image": "heroku/python",
+    "formation": {
+        "web": {
+            "quantity": 1,
+            "size": "free"
+        }
+    },
+    "addons": [{
+        "plan": "heroku-postgresql"
+    }],
+    "env": {
+        "TOKEN": {
+            "description": "Bot API Key from BotFather https://t.me/BotFather",
+            "required": true
+        },
+        "API_ID": {
+            "description": "API ID from https://my.telegram.org",
+            "required": true
+        },
+        "API_HASH": {
+            "description": "API Hash from https://my.telegram.org",
+            "required": true
+        },
+        "OWNER_ID": {
+            "description": "Telegram ID of the bot owner.",
+            "required": true
+        },
+        "WEBHOOK": {
+            "description": "Set to any value if you want to use Webhooks.",
+            "required": false
+        },
+        "URL": {
+            "description": "URL of server for webhooks. (Use `https://<appname>.herokuapp.com/`)",
+            "required": false
+        },
+        "SUDO_USERS": {
+            "description": "Space separated list of user_ids that can use the bot everywhere.",
+            "required": false
+        },
+        "SUDO_GROUPS": {
+            "description": "Space separated list of group_ids that are considered sudo.",
+            "required": false
+        },
+        "DND_USERS": {
+            "description": "Space separated list of user_ids that will not be tagged by the bot.",
+            "required": false
+        }
+    }
+}

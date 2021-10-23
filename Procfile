@@ -1,0 +1,1 @@
+web: python3 -m tagall_bot
