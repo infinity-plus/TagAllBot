@@ -55,6 +55,10 @@
         "DND_USERS": {
             "description": "Space separated list of user_ids that will not be tagged by the bot.",
             "required": false
+        },
+        "API_URL": {
+            "description": "URL of deployed API",
+            "required": true
         }
     }
 }
