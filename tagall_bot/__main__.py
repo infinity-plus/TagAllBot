@@ -40,7 +40,7 @@ def start(update: Update, _: CallbackContext) -> None:
     )
 
 
-def help(update: Update, _: CallbackContext) -> None:
+def help_callback(update: Update, _: CallbackContext) -> None:
     if not isinstance(update.effective_message, Message):
         return
     update.effective_message.reply_text(
@@ -277,7 +277,7 @@ if __name__ == "__main__":
         PrefixHandler(
             prefix="!",
             command="help",
-            callback=help,
+            callback=help_callback,
         )
     )
     DISPATCHER.add_handler(
