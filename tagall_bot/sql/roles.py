@@ -1,9 +1,12 @@
+import sys
 import threading
 
 from sqlalchemy import Column, BigInteger, Integer
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
+from tagall_bot import LOGGER
 from tagall_bot.sql import BASE, SESSION
+from tagall_bot.texts import ERROR_TEXT
 
 
 class sudo_users(BASE):
@@ -46,7 +49,25 @@ def get_users(table: sudo_users | tag_users) -> set[int]:
 
 def is_tag_user(user_id: int, chat_id: int) -> bool:
     try:
-        user = SESSION.get(tag_users, (user_id, chat_id))
+        user = (
+            SESSION.query(tag_users)
+            .filter_by(
+                user_id=user_id,
+                chat_id=chat_id,
+            )
+            .one()
+        )
+    except NoResultFound:
+        user = None
+    except MultipleResultsFound as e:
+        LOGGER.error(
+            ERROR_TEXT[str(e)].format(
+                user_id,
+                chat_id,
+            )
+        )
+        LOGGER.error(e.args)
+        raise e
     finally:
         SESSION.close()
     return bool(user)
@@ -54,7 +75,7 @@ def is_tag_user(user_id: int, chat_id: int) -> bool:
 
 def add_sudo(user_id: int):
     with INSERTION_LOCK:
-        user = SESSION.get(sudo_users, user_id)
+        user = SESSION.get(sudo_users, user_id)  # type: ignore
         if user is None:
             SESSION.add(sudo_users(user_id))
             SESSION.commit()
@@ -75,8 +96,15 @@ def add_tag(user_id: int, chat_id: int):
             )
         except NoResultFound:
             user = None
-        except MultipleResultsFound:
-            raise Exception("Multiple tag users found")
+        except MultipleResultsFound as e:
+            LOGGER.error(
+                ERROR_TEXT["MultipleResultsFound"].format(
+                    user_id,
+                    chat_id,
+                )
+            )
+            LOGGER.error(e.args)
+            raise e
         if user is None:
             SESSION.add(tag_users(user_id, chat_id))
             SESSION.commit()
@@ -86,7 +114,7 @@ def add_tag(user_id: int, chat_id: int):
 
 def remove_sudo(user_id: int):
     with INSERTION_LOCK:
-        user = SESSION.get(sudo_users, user_id)
+        user = SESSION.get(sudo_users, user_id)  # type: ignore
         if user:
             SESSION.delete(user)
             SESSION.commit()
@@ -107,8 +135,15 @@ def remove_tag(user_id: int, chat_id: int):
             )
         except NoResultFound:
             user = None
-        except MultipleResultsFound:
-            raise Exception("Multiple tag users found")
+        except MultipleResultsFound as e:
+            LOGGER.error(
+                ERROR_TEXT["MultipleResultsFound"].format(
+                    user_id,
+                    chat_id,
+                )
+            )
+            LOGGER.error(e.args)
+            raise e
         if user is not None:
             SESSION.delete(user)
             SESSION.commit()

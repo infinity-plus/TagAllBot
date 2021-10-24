@@ -72,7 +72,7 @@ def split_list(array: list[str], chunk_size: int):
     https://stackoverflow.com/a/312464/9664447
     """
     for i in range(0, len(array), chunk_size):
-        yield array[i : i + chunk_size]
+        yield array[i : i + chunk_size]  # noqa
 
 
 def schedule_job(
@@ -96,11 +96,11 @@ def tag_all(update: Update, context: CallbackContext) -> None:
         and isinstance(update.effective_message, Message)
         and isinstance(update.effective_user, User)
     ):
-        user = update.effective_user
-        chat = update.effective_chat
+        user = update.effective_message.from_user
+        chat = update.effective_message.chat
         if user.id in TAG_USERS.chat_ids and not is_tag_user(user.id, chat.id):
             update.effective_message.reply_text(
-                text=f"Couldn't grant tag power to add *{user.full_name}*",
+                text=BAD_TEXT[1],
                 parse_mode=PARSEMODE_MARKDOWN,
             )
         message_id = update.effective_message.reply_to_message.message_id

@@ -16,3 +16,7 @@ BAD_TEXT = (
     "You can't use this command in private chats.",
     "You are not allowed to use this command.",
 )
+
+ERROR_TEXT = {
+    "MultipleResultsFound": "Multiple Tag Users with user_id={}; chat_id={}",
+}
