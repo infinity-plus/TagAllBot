@@ -1,10 +1,9 @@
-import sys
+import logging
 import threading
 
 from sqlalchemy import Column, BigInteger, Integer
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
-from tagall_bot import LOGGER
 from tagall_bot.sql import BASE, SESSION
 from tagall_bot.texts import ERROR_TEXT
 
@@ -60,13 +59,13 @@ def is_tag_user(user_id: int, chat_id: int) -> bool:
     except NoResultFound:
         user = None
     except MultipleResultsFound as e:
-        LOGGER.error(
+        logging.error(
             ERROR_TEXT[str(e)].format(
                 user_id,
                 chat_id,
             )
         )
-        LOGGER.error(e.args)
+        logging.error(e.args)
         raise e
     finally:
         SESSION.close()
@@ -97,13 +96,13 @@ def add_tag(user_id: int, chat_id: int):
         except NoResultFound:
             user = None
         except MultipleResultsFound as e:
-            LOGGER.error(
+            logging.error(
                 ERROR_TEXT["MultipleResultsFound"].format(
                     user_id,
                     chat_id,
                 )
             )
-            LOGGER.error(e.args)
+            logging.error(e.args)
             raise e
         if user is None:
             SESSION.add(tag_users(user_id, chat_id))
@@ -136,13 +135,13 @@ def remove_tag(user_id: int, chat_id: int):
         except NoResultFound:
             user = None
         except MultipleResultsFound as e:
-            LOGGER.error(
+            logging.error(
                 ERROR_TEXT["MultipleResultsFound"].format(
                     user_id,
                     chat_id,
                 )
             )
-            LOGGER.error(e.args)
+            logging.error(e.args)
             raise e
         if user is not None:
             SESSION.delete(user)
