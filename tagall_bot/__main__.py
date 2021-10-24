@@ -32,29 +32,32 @@ from tagall_bot.texts import BAD_TEXT, HELP_TEXT, START_TEXT
 
 
 def start(update: Update, _: CallbackContext) -> None:
-    if isinstance(update.effective_message, Message):
-        update.effective_message.reply_text(
-            text=START_TEXT,
-            parse_mode=PARSEMODE_MARKDOWN,
-        )
+    if not isinstance(update.effective_message, Message):
+        return
+    update.effective_message.reply_text(
+        text=START_TEXT,
+        parse_mode=PARSEMODE_MARKDOWN,
+    )
 
 
 def help(update: Update, _: CallbackContext) -> None:
-    if isinstance(update.effective_message, Message):
-        update.effective_message.reply_text(
-            text=HELP_TEXT,
-            parse_mode=PARSEMODE_MARKDOWN,
-        )
+    if not isinstance(update.effective_message, Message):
+        return
+    update.effective_message.reply_text(
+        text=HELP_TEXT,
+        parse_mode=PARSEMODE_MARKDOWN,
+    )
 
 
 def send_tag(context: CallbackContext) -> None:
-    if isinstance(context.job, Job):
-        context.bot.send_message(
-            text=", ".join(context.job.context[2]),
-            chat_id=context.job.context[0],
-            reply_to_message_id=context.job.context[1],
-            parse_mode=PARSEMODE_MARKDOWN,
-        )
+    if not isinstance(context.job, Job):
+        return
+    context.bot.send_message(
+        text=", ".join(context.job.context[2]),
+        chat_id=context.job.context[0],
+        reply_to_message_id=context.job.context[1],
+        parse_mode=PARSEMODE_MARKDOWN,
+    )
 
 
 def mention_list(chat_id: int):
@@ -83,171 +86,177 @@ def schedule_job(
     tag: list[str],
     delay: int,
 ):
-    if isinstance(context.job_queue, JobQueue):
-        context.job_queue.run_once(
-            callback=send_tag,
-            when=3 * delay,
-            context=(chat_id, message_id, tag),
-        )
+    if not isinstance(context.job_queue, JobQueue):
+        return
+    context.job_queue.run_once(
+        callback=send_tag,
+        when=3 * delay,
+        context=(chat_id, message_id, tag),
+    )
 
 
 def tag_all(update: Update, context: CallbackContext) -> None:
-    if (
-        isinstance(update.effective_chat, Chat)
-        and isinstance(update.effective_message, Message)
-        and isinstance(update.effective_user, User)
-    ):
-        user = update.effective_message.from_user
-        chat = update.effective_message.chat
-        if user.id in TAG_USERS.chat_ids and not is_tag_user(user.id, chat.id):
-            update.effective_message.reply_text(
-                text=BAD_TEXT[1],
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
-        message_id = update.effective_message.reply_to_message.message_id
-        tags = mention_list(update.effective_chat.id)
-        for i, tag in enumerate(split_list(list(tags), 5)):
-            schedule_job(context, update.effective_chat.id, message_id, tag, i)
+    if not isinstance(update.effective_message, Message):
+        return
+    user = update.effective_message.from_user
+    chat = update.effective_message.chat
+    if user.id in TAG_USERS.chat_ids and not is_tag_user(user.id, chat.id):
+        update.effective_message.reply_text(
+            text=BAD_TEXT[1],
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
+        return
+    message_id = update.effective_message.reply_to_message.message_id
+    tags = mention_list(chat.id)
+    for i, tag in enumerate(split_list(list(tags), 5)):
+        schedule_job(context, chat.id, message_id, tag, i)
 
 
 def bad_tag(update: Update, _: CallbackContext) -> None:
-    if isinstance(update.effective_message, Message) and isinstance(
+    if not isinstance(update.effective_message, Message) or not isinstance(
         update.effective_chat, Chat
     ):
-        if update.effective_chat.type == CHAT_PRIVATE:
-            update.effective_message.reply_text(
-                text=BAD_TEXT[0],
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
-        elif update.effective_message.reply_to_message is None:
-            update.effective_message.reply_text(
-                text="Please reply to a message to tag all users of the chat.",
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
-        else:
-            update.effective_message.reply_text(
-                text=BAD_TEXT[1],
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
+        return
+    if update.effective_chat.type == CHAT_PRIVATE:
+        update.effective_message.reply_text(
+            text=BAD_TEXT[0],
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
+    elif update.effective_message.reply_to_message is None:
+        update.effective_message.reply_text(
+            text="Please reply to a message to tag all users of the chat.",
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
+    else:
+        update.effective_message.reply_text(
+            text=BAD_TEXT[1],
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
 
 
 def add_tag_user(update: Update, _: CallbackContext):
-    if isinstance(update.effective_message, Message) and isinstance(
+    if not isinstance(update.effective_message, Message) or not isinstance(
         update.effective_chat, Chat
     ):
-        user: User = update.effective_message.reply_to_message.from_user
-        if add_tag(
-            user.id,
-            update.effective_chat.id,
-        ):
-            TAG_USERS.add_member(user.id)
-            update.effective_message.reply_text(
-                text=f"Granted *tag* power to *{user.full_name}*",
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
-        else:
-            update.effective_message.reply_text(
-                text=f"Couldn't grant tag power to add *{user.full_name}*",
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
+        return
+    user: User = update.effective_message.reply_to_message.from_user
+    if add_tag(
+        user.id,
+        update.effective_chat.id,
+    ):
+        TAG_USERS.add_member(user.id)
+        update.effective_message.reply_text(
+            text=f"Granted *tag* power to *{user.full_name}*",
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
+    else:
+        update.effective_message.reply_text(
+            text=f"Couldn't grant tag power to add *{user.full_name}*",
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
 
 
 def add_sudo_user(update: Update, _: CallbackContext):
-    if isinstance(update.effective_message, Message):
-        user: User = update.effective_message.reply_to_message.from_user
-        if add_sudo(user.id):
-            SUDO_USERS.add_member(user.id)
-            update.effective_message.reply_text(
-                text=f"Granted *superuser* power to *{user.full_name}*",
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
-        else:
-            update.effective_message.reply_text(
-                text=f"Couldn't grant superuser power to *{user.full_name}*",
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
+    if not isinstance(update.effective_message, Message):
+        return
+    user: User = update.effective_message.reply_to_message.from_user
+    if add_sudo(user.id):
+        SUDO_USERS.add_member(user.id)
+        update.effective_message.reply_text(
+            text=f"Granted *superuser* power to *{user.full_name}*",
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
+    else:
+        update.effective_message.reply_text(
+            text=f"Couldn't grant superuser power to *{user.full_name}*",
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
 
 
 def bad_add(update: Update, _: CallbackContext) -> None:
-    if isinstance(update.effective_message, Message) and isinstance(
+    if not isinstance(update.effective_message, Message) or not isinstance(
         update.effective_chat, Chat
     ):
-        if update.effective_chat.type == CHAT_PRIVATE:
-            update.effective_message.reply_text(
-                text=BAD_TEXT[0],
-            )
-        elif update.effective_message.reply_to_message is None:
-            update.effective_message.reply_text(
-                text="Please reply to a user to grant power.",
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
-        else:
-            update.effective_message.reply_text(
-                text=BAD_TEXT[1],
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
+        return
+    if update.effective_chat.type == CHAT_PRIVATE:
+        update.effective_message.reply_text(
+            text=BAD_TEXT[0],
+        )
+    elif update.effective_message.reply_to_message is None:
+        update.effective_message.reply_text(
+            text="Please reply to a user to grant power.",
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
+    else:
+        update.effective_message.reply_text(
+            text=BAD_TEXT[1],
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
 
 
 def remove_tag_user(update: Update, _: CallbackContext):
-    if isinstance(update.effective_message, Message):
-        user: User = update.effective_message.reply_to_message.from_user
-        if remove_tag(
-            user.id,
-            update.effective_message.chat.id,
-        ):
-            TAG_USERS.kick_member(user.id)
-            update.effective_message.reply_text(
-                text=f"Revoked *tag* power from *{user.full_name}*",
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
-        else:
-            update.effective_message.reply_text(
-                text=f"Couldn't revoked tag power from add *{user.full_name}*",
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
+    if not isinstance(update.effective_message, Message):
+        return
+    user: User = update.effective_message.reply_to_message.from_user
+    if remove_tag(
+        user.id,
+        update.effective_message.chat.id,
+    ):
+        TAG_USERS.kick_member(user.id)
+        update.effective_message.reply_text(
+            text=f"Revoked *tag* power from *{user.full_name}*",
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
+    else:
+        update.effective_message.reply_text(
+            text=f"Couldn't revoked tag power from add *{user.full_name}*",
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
 
 
 def remove_sudo_user(update: Update, _: CallbackContext):
-    if isinstance(update.effective_message, Message):
-        user: User = update.effective_message.reply_to_message.from_user
-        if remove_sudo(user.id):
-            SUDO_USERS.kick_member(user.id)
-            update.effective_message.reply_text(
-                text=f"Revoked *superuser* power from *{user.full_name}*",
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
-        else:
-            update.effective_message.reply_text(
-                text=f"Couldn't revoke superuser power for *{user.full_name}*",
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
+    if not isinstance(update.effective_message, Message):
+        return
+    user: User = update.effective_message.reply_to_message.from_user
+    if remove_sudo(user.id):
+        SUDO_USERS.kick_member(user.id)
+        update.effective_message.reply_text(
+            text=f"Revoked *superuser* power from *{user.full_name}*",
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
+    else:
+        update.effective_message.reply_text(
+            text=f"Couldn't revoke superuser power for *{user.full_name}*",
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
 
 
 def bad_remove(update: Update, _: CallbackContext) -> None:
-    if isinstance(update.effective_message, Message) and isinstance(
+    if not isinstance(update.effective_message, Message) or not isinstance(
         update.effective_chat, Chat
     ):
-        if update.effective_chat.type == CHAT_PRIVATE:
-            update.effective_message.reply_text(
-                text=BAD_TEXT[0],
-            )
-        elif update.effective_message.reply_to_message is None:
-            update.effective_message.reply_text(
-                text="Please reply to a user to revoke power.",
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
-        else:
-            update.effective_message.reply_text(
-                text=BAD_TEXT[1],
-                parse_mode=PARSEMODE_MARKDOWN,
-            )
+        return
+    if update.effective_chat.type == CHAT_PRIVATE:
+        update.effective_message.reply_text(
+            text=BAD_TEXT[0],
+        )
+    elif update.effective_message.reply_to_message is None:
+        update.effective_message.reply_text(
+            text="Please reply to a user to revoke power.",
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
+    else:
+        update.effective_message.reply_text(
+            text=BAD_TEXT[1],
+            parse_mode=PARSEMODE_MARKDOWN,
+        )
 
 
 if __name__ == "__main__":
     LOGGER.info("Starting Tagall Bot...")
     LOGGER.info("Adding Handlers...")
     DISPATCHER.add_error_handler(
-        callback=error_callback,
+        callback=error_callback,  # type: ignore
         run_async=True,
     )
     DISPATCHER.add_handler(
