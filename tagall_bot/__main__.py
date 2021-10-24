@@ -20,6 +20,7 @@ from tagall_bot import (
     URL,
     WEBHOOK,
 )
+from tagall_bot.error_handler import error_callback, list_errors
 from tagall_bot.sql.roles import (
     add_sudo,
     add_tag,
@@ -245,6 +246,17 @@ def bad_remove(update: Update, _: CallbackContext) -> None:
 if __name__ == "__main__":
     LOGGER.info("Starting Tagall Bot...")
     LOGGER.info("Adding Handlers...")
+    DISPATCHER.add_error_handler(
+        callback=error_callback,
+        run_async=True,
+    )
+    DISPATCHER.add_handler(
+        PrefixHandler(
+            prefix="!",
+            command="errors",
+            callback=list_errors,
+        )
+    )
     DISPATCHER.add_handler(
         PrefixHandler(
             prefix="!",

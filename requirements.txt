@@ -1,5 +1,6 @@
+pretty_errors==1.2.24
+psycopg2-binary==2.9.1
 git+https://github.com/python-telegram-bot/ptbcontrib.git
 python_telegram_bot==13.7
+requests==2.25.1
 SQLAlchemy==1.4.26
-psycopg2-binary
-requests

@@ -20,3 +20,5 @@ BAD_TEXT = (
 ERROR_TEXT = {
     "MultipleResultsFound": "Multiple Tag Users with user_id={}; chat_id={}",
 }
+
+SEPARATOR = "---------------------------------------------------------------\n"
