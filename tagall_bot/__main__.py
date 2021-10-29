@@ -21,6 +21,7 @@ from tagall_bot import (
     URL,
     WEBHOOK,
 )
+from tagall_bot.decorators import command_handler
 from tagall_bot.error_handler import error_callback, list_errors
 from tagall_bot.sql.roles import (
     add_sudo,
@@ -32,6 +33,7 @@ from tagall_bot.sql.roles import (
 from tagall_bot.texts import BAD_TEXT, HELP_TEXT, START_TEXT
 
 
+@command_handler("start", "!")
 def start(update: Update, _: CallbackContext) -> None:
     """The start command callback function"""
     if not isinstance(update.effective_message, Message):
@@ -42,6 +44,7 @@ def start(update: Update, _: CallbackContext) -> None:
     )
 
 
+@command_handler("help", "!")
 def help_callback(update: Update, _: CallbackContext) -> None:
     """The help command callback function"""
     if not isinstance(update.effective_message, Message):
@@ -121,6 +124,13 @@ def schedule_job(
     )
 
 
+@command_handler(
+    commands=["tag", "everyone"],
+    prefix=["!", "@"],
+    filters=ReplyToMessageFilter(Filters.chat_type.groups),
+    run_async=True,
+    roles=TAG_USERS,
+)
 def tag_all(update: Update, context: CallbackContext) -> None:
     """The tag all command callback function"""
     if not isinstance(update.effective_message, Message):
@@ -139,6 +149,11 @@ def tag_all(update: Update, context: CallbackContext) -> None:
         schedule_job(context, chat.id, message_id, tag, i)
 
 
+@command_handler(
+    commands=["tag", "everyone"],
+    prefix=["!", "@"],
+    run_async=True,
+)
 def bad_tag(update: Update, _: CallbackContext) -> None:
     """The callback function to handle improper use of tag all command"""
     if not isinstance(update.effective_message, Message) or not isinstance(
@@ -162,6 +177,13 @@ def bad_tag(update: Update, _: CallbackContext) -> None:
         )
 
 
+@command_handler(
+    commands="grant",
+    prefix="!",
+    filters=ReplyToMessageFilter(Filters.chat_type.groups),
+    run_async=True,
+    roles=SUDO_USERS,
+)
 def add_tag_user(update: Update, _: CallbackContext):
     """The function to add a user to 'Tag Users' role.
     Callback function of grant command.
@@ -187,6 +209,13 @@ def add_tag_user(update: Update, _: CallbackContext):
         )
 
 
+@command_handler(
+    commands="grant_su",
+    prefix="!",
+    filters=ReplyToMessageFilter(Filters.chat_type.groups),
+    run_async=True,
+    roles=ADMINS,
+)
 def add_sudo_user(update: Update, _: CallbackContext):
     """The function to add a user to 'Sudo Users' role.
     Callback function of grant_su command.
@@ -207,6 +236,11 @@ def add_sudo_user(update: Update, _: CallbackContext):
         )
 
 
+@command_handler(
+    commands=["grant", "grant_su"],
+    prefix="!",
+    run_async=True,
+)
 def bad_add(update: Update, _: CallbackContext) -> None:
     """The callback function to handle improper use of grant command"""
     if not isinstance(update.effective_message, Message) or not isinstance(
@@ -229,6 +263,13 @@ def bad_add(update: Update, _: CallbackContext) -> None:
         )
 
 
+@command_handler(
+    commands="revoke",
+    prefix="!",
+    filters=ReplyToMessageFilter(Filters.chat_type.groups),
+    run_async=True,
+    roles=SUDO_USERS,
+)
 def remove_tag_user(update: Update, _: CallbackContext):
     """The function to remove a user from 'Tag Users' role.
     Callback function of revoke command.
@@ -252,6 +293,13 @@ def remove_tag_user(update: Update, _: CallbackContext):
         )
 
 
+@command_handler(
+    commands="revoke_su",
+    prefix="!",
+    filters=ReplyToMessageFilter(Filters.chat_type.groups),
+    run_async=True,
+    roles=ADMINS,
+)
 def remove_sudo_user(update: Update, _: CallbackContext):
     """The function to remove a user from 'Sudo Users' role.
     Callback function of revoke_su command.
@@ -272,6 +320,11 @@ def remove_sudo_user(update: Update, _: CallbackContext):
         )
 
 
+@command_handler(
+    commands=["revoke_su", "revoke"],
+    prefix="!",
+    run_async=True,
+)
 def bad_remove(update: Update, _: CallbackContext) -> None:
     """The callback function to handle improper use of revoke command"""
     if not isinstance(update.effective_message, Message) or not isinstance(
@@ -300,109 +353,6 @@ if __name__ == "__main__":
     DISPATCHER.add_error_handler(
         callback=error_callback,  # type: ignore
         run_async=True,
-    )
-    DISPATCHER.add_handler(
-        PrefixHandler(
-            prefix="!",
-            command="errors",
-            callback=list_errors,
-        )
-    )
-    DISPATCHER.add_handler(
-        PrefixHandler(
-            prefix="!",
-            command="start",
-            callback=start,
-        )
-    )
-    DISPATCHER.add_handler(
-        PrefixHandler(
-            prefix="!",
-            command="help",
-            callback=help_callback,
-        )
-    )
-    DISPATCHER.add_handler(
-        RolesHandler(
-            PrefixHandler(
-                prefix=["!", "@"],
-                command=["tag", "everyone"],
-                callback=tag_all,
-                filters=ReplyToMessageFilter(filters=Filters.all),
-                run_async=True,
-            ),
-            roles=TAG_USERS,
-        )
-    )
-    DISPATCHER.add_handler(
-        PrefixHandler(
-            prefix=["!", "@"],
-            command=["tag", "everyone"],
-            callback=bad_tag,
-            run_async=True,
-        )
-    )
-    DISPATCHER.add_handler(
-        RolesHandler(
-            PrefixHandler(
-                prefix="!",
-                command="grant",
-                callback=add_tag_user,
-                filters=Filters.chat_type.groups,
-                run_async=True,
-            ),
-            roles=SUDO_USERS,
-        )
-    )
-    DISPATCHER.add_handler(
-        RolesHandler(
-            PrefixHandler(
-                prefix="!",
-                command="grant_su",
-                callback=add_sudo_user,
-                filters=Filters.chat_type.groups,
-                run_async=True,
-            ),
-            roles=ADMINS,
-        )
-    )
-    DISPATCHER.add_handler(
-        PrefixHandler(
-            prefix="!",
-            command=["grant", "grant_su"],
-            callback=bad_add,
-        )
-    )
-    DISPATCHER.add_handler(
-        RolesHandler(
-            PrefixHandler(
-                prefix="!",
-                command="revoke",
-                callback=remove_tag_user,
-                filters=Filters.chat_type.groups,
-                run_async=True,
-            ),
-            roles=SUDO_USERS,
-        )
-    )
-    DISPATCHER.add_handler(
-        RolesHandler(
-            PrefixHandler(
-                prefix="!",
-                command="revoke_su",
-                callback=remove_sudo_user,
-                filters=Filters.chat_type.groups,
-                run_async=True,
-            ),
-            roles=ADMINS,
-        )
-    )
-    DISPATCHER.add_handler(
-        PrefixHandler(
-            prefix="!",
-            command=["revoke", "revoke_su"],
-            callback=bad_remove,
-        )
     )
     if WEBHOOK:
         LOGGER.info("Using Webhook...")
