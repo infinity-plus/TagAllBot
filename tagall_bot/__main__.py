@@ -108,7 +108,7 @@ def tag_all(update: Update, context: CallbackContext) -> None:
         return
     message_id = update.effective_message.reply_to_message.message_id
     tags = mention_list(chat.id)
-    for i, tag in enumerate(split_list(list(tags), 20)):
+    for i, tag in enumerate(split_list(list(tags), 5)):
         schedule_job(context, chat.id, message_id, tag, i)
 
 
