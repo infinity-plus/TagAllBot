@@ -1,3 +1,5 @@
+"""The sub-package to deal with database."""
+
 from os import environ
 
 from sqlalchemy import create_engine

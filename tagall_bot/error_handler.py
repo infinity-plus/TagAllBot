@@ -1,3 +1,5 @@
+"""The module for custom error handling."""
+
 import html
 import io
 import random
@@ -22,7 +24,7 @@ pretty_errors.mono()
 
 
 class ErrorsDict(dict):
-    "A custom dict to store errors and their count"
+    """A custom dict to store errors and their count"""
 
     def __init__(self, *args, **kwargs):
         self.raw = []
@@ -46,6 +48,7 @@ errors = ErrorsDict()
 
 
 def error_callback(update: Update, context: CallbackContext):
+    """The error handler callback function"""
     if not update:
         return
     if context.error in errors:
@@ -116,6 +119,7 @@ def error_callback(update: Update, context: CallbackContext):
 
 
 def list_errors(update: Update, context: CallbackContext):
+    """The error list callback function"""
     if not isinstance(update.effective_user, User):
         return
     if update.effective_user.id != OWNER_ID:

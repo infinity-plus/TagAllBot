@@ -1,3 +1,5 @@
+"""The module dealing with custom Role's database."""
+
 import logging
 import threading
 

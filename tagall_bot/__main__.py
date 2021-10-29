@@ -1,3 +1,4 @@
+from typing import Generator
 import requests
 from ptbcontrib.reply_to_message_filter import ReplyToMessageFilter
 from ptbcontrib.roles import RolesHandler
@@ -32,6 +33,7 @@ from tagall_bot.texts import BAD_TEXT, HELP_TEXT, START_TEXT
 
 
 def start(update: Update, _: CallbackContext) -> None:
+    """The start command callback function"""
     if not isinstance(update.effective_message, Message):
         return
     update.effective_message.reply_text(
@@ -41,6 +43,7 @@ def start(update: Update, _: CallbackContext) -> None:
 
 
 def help_callback(update: Update, _: CallbackContext) -> None:
+    """The help command callback function"""
     if not isinstance(update.effective_message, Message):
         return
     update.effective_message.reply_text(
@@ -50,6 +53,7 @@ def help_callback(update: Update, _: CallbackContext) -> None:
 
 
 def send_tag(context: CallbackContext) -> None:
+    """The send tag job callback function"""
     if not isinstance(context.job, Job):
         return
     context.bot.send_message(
@@ -61,6 +65,14 @@ def send_tag(context: CallbackContext) -> None:
 
 
 def mention_list(chat_id: int):
+    """The function to get particiapant's ID and first name from chat ID.
+    Uses https://github.com/infinity-plus/chatidToMembersAPI.
+    Args:
+        - chat_id: int -> chat_id of the chat
+    Returns:
+        - list[str] -> If the API call was successful.
+        - [] if the API call was not successful.
+    """
     r = requests.get(url=f"{API_URL}/get", params={"chat_id": chat_id})
     users = r.json() if r.status_code == 200 else {}
     return [
@@ -70,10 +82,16 @@ def mention_list(chat_id: int):
     ]
 
 
-def split_list(array: list[str], chunk_size: int):
+def split_list(
+    array: list[str],
+    chunk_size: int,
+) -> Generator[list[str], None, None]:
     """
     Splits a given list evenly into chunk_size.
     https://stackoverflow.com/a/312464/9664447
+    Args:
+        - array: list[str] -> The list to split.
+        - chunk_size: int -> The size of the chunks.
     """
     for i in range(0, len(array), chunk_size):
         yield array[i : i + chunk_size]  # noqa
@@ -86,6 +104,14 @@ def schedule_job(
     tag: list[str],
     delay: int,
 ):
+    """The job scheduler function.
+    Args:
+        - context: CallbackContext -> The context of the callback.
+        - chat_id: int -> The chat ID.
+        - message_id: int -> The message ID.
+        - tag: list[str] -> The list of tags.
+        - delay: int -> The delay in seconds.
+    """
     if not isinstance(context.job_queue, JobQueue):
         return
     context.job_queue.run_once(
@@ -96,6 +122,7 @@ def schedule_job(
 
 
 def tag_all(update: Update, context: CallbackContext) -> None:
+    """The tag all command callback function"""
     if not isinstance(update.effective_message, Message):
         return
     user = update.effective_message.from_user
@@ -113,6 +140,7 @@ def tag_all(update: Update, context: CallbackContext) -> None:
 
 
 def bad_tag(update: Update, _: CallbackContext) -> None:
+    """The callback function to handle improper use of tag all command"""
     if not isinstance(update.effective_message, Message) or not isinstance(
         update.effective_chat, Chat
     ):
@@ -135,6 +163,9 @@ def bad_tag(update: Update, _: CallbackContext) -> None:
 
 
 def add_tag_user(update: Update, _: CallbackContext):
+    """The function to add a user to 'Tag Users' role.
+    Callback function of grant command.
+    """
     if not isinstance(update.effective_message, Message) or not isinstance(
         update.effective_chat, Chat
     ):
@@ -157,6 +188,9 @@ def add_tag_user(update: Update, _: CallbackContext):
 
 
 def add_sudo_user(update: Update, _: CallbackContext):
+    """The function to add a user to 'Sudo Users' role.
+    Callback function of grant_su command.
+    """
     if not isinstance(update.effective_message, Message):
         return
     user: User = update.effective_message.reply_to_message.from_user
@@ -174,6 +208,7 @@ def add_sudo_user(update: Update, _: CallbackContext):
 
 
 def bad_add(update: Update, _: CallbackContext) -> None:
+    """The callback function to handle improper use of grant command"""
     if not isinstance(update.effective_message, Message) or not isinstance(
         update.effective_chat, Chat
     ):
@@ -195,6 +230,9 @@ def bad_add(update: Update, _: CallbackContext) -> None:
 
 
 def remove_tag_user(update: Update, _: CallbackContext):
+    """The function to remove a user from 'Tag Users' role.
+    Callback function of revoke command.
+    """
     if not isinstance(update.effective_message, Message):
         return
     user: User = update.effective_message.reply_to_message.from_user
@@ -215,6 +253,9 @@ def remove_tag_user(update: Update, _: CallbackContext):
 
 
 def remove_sudo_user(update: Update, _: CallbackContext):
+    """The function to remove a user from 'Sudo Users' role.
+    Callback function of revoke_su command.
+    """
     if not isinstance(update.effective_message, Message):
         return
     user: User = update.effective_message.reply_to_message.from_user
@@ -232,6 +273,7 @@ def remove_sudo_user(update: Update, _: CallbackContext):
 
 
 def bad_remove(update: Update, _: CallbackContext) -> None:
+    """The callback function to handle improper use of revoke command"""
     if not isinstance(update.effective_message, Message) or not isinstance(
         update.effective_chat, Chat
     ):

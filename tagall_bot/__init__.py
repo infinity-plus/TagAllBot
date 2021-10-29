@@ -1,3 +1,5 @@
+"""The main package of TagAll Bot."""
+
 import logging
 from os import environ
 

@@ -1,3 +1,4 @@
+"""The module for constant text strings used throughout the project."""
 START_TEXT = """
 Hi! I'm **Tagall Bot**.
 
